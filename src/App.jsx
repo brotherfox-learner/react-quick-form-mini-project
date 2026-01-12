@@ -1,11 +1,9 @@
 import "./App.css";
+import MovieForm from "./components/MovieForm";
 
 function App() {
-  return (
-    <>
-      <div className="bg-red-500">Hello World</div>
-    </>
-  );
+  return <MovieForm />;
 }
 
 export default App;
+
