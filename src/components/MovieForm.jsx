@@ -1,6 +1,7 @@
-import { useFormValidation } from "../hooks/useFormValidation";
+import { useState } from "react";
 import movies from "../data/movies";
-import { PLACEHOLDERS } from "../constants/formConstants";
+import { PLACEHOLDERS, ERROR_MESSAGES } from "../constants/formConstants";
+import { validateName, validateEmail } from "../utils/validation";
 import FormHeader from "./FormHeader";
 import SuccessScreen from "./SuccessScreen";
 import TextInput from "./formFields/TextInput";
@@ -10,16 +11,67 @@ import SendIcon from "@mui/icons-material/Send";
 import RestartAltIcon from "@mui/icons-material/RestartAlt";
 
 export default function MovieForm() {
-  const {
-    formData,
-    isValidForm,
-    handleChange,
-    handleReset,
-    handleSubmit,
-    getNameError,
-    getEmailError,
-    getMovieError,
-  } = useFormValidation();
+  const [formData, setFormData] = useState({
+    name: "",
+    email: "",
+    movie: "",
+    comment: "",
+  });
+  const [isSubmitted, setIsSubmitted] = useState(false);
+  const [isValidForm, setIsValidForm] = useState(false);
+
+  // อัพเดท form data เมื่อผู้ใช้กรอกข้อมูล
+  const handleChange = (e) => {
+    const { name, value } = e.target;
+    setFormData((prevData) => ({
+      ...prevData,
+      [name]: value,
+    }));
+  };
+
+  // Reset form กลับไปเป็นค่าเริ่มต้น
+  const handleReset = () => {
+    setFormData({
+      name: "",
+      email: "",
+      movie: "",
+      comment: "",
+    });
+    setIsSubmitted(false);
+    setIsValidForm(false);
+  };
+
+  // ตรวจสอบ error ของ field ต่างๆ (แสดง error เมื่อ submit แล้วเท่านั้น)
+  const getNameError = () => {
+    if (!isSubmitted) return "";
+    return validateName(formData.name);
+  };
+
+  const getEmailError = () => {
+    if (!isSubmitted) return "";
+    return validateEmail(formData.email);
+  };
+
+  const getMovieError = () => {
+    if (!isSubmitted) return "";
+    return !formData.movie ? ERROR_MESSAGES.MOVIE_REQUIRED : "";
+  };
+
+  // จัดการการ submit form
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    setIsSubmitted(true);
+
+    // ตรวจสอบ validation โดยตรง
+    const nameError = validateName(formData.name);
+    const emailError = validateEmail(formData.email);
+    const movieError = !formData.movie ? ERROR_MESSAGES.MOVIE_REQUIRED : "";
+
+    // ถ้าไม่มี error ใดๆ ให้ set isValidForm เป็น true
+    if (!nameError && !emailError && !movieError) {
+      setIsValidForm(true);
+    }
+  };
 
   // แปลง movies array เป็น format ที่ RadioGroup component ต้องการ
   const movieOptions = movies.map((movie) => ({
